@@ -1,16 +1,9 @@
+*{
+  font-family:Arial;
+}
+
 .App {
   text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
 }
 
 .App-header {
@@ -28,11 +21,68 @@
   color: #61dafb;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-gap: 20px;
 }
+
+.canvas-container {
+  position: relative;
+}
+
+.canvas-UI {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.gridSlider::before {
+  content: '8';
+  color:black;
+  position: relative;
+  left: 90%;
+  top: 100%;
+}
+
+.gridSlider::after {
+  content: '24';
+  color:black;
+  position: relative;
+  right: 90%;
+  top: 100%;
+}
+
+.radiusSlider::before {
+  content: '10';
+  color:black;
+  position: relative;
+  left: 90%;
+  top: 100%;
+}
+
+.radiusSlider::after {
+  content: '200';
+  color:black;
+  position: relative;
+  left: 90%;
+  top: 100%;
+}
+
+.slider::before {
+  content: '1';
+  color:black;
+  position: relative;
+  left: 90%;
+  top: 100%;
+}
+
+.slider::after {
+  content: '8';
+  color:black;
+  position: relative;
+  right: 90%;
+  top: 100%;
+}
+
