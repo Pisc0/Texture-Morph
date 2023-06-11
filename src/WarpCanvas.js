@@ -2,6 +2,7 @@ import './App.css';
 import {getGridPoints} from './Grid.js'
 import React, { useEffect, useRef, useState } from 'react';
 
+// Returns the mouse position relative to the canvas given as parameter
 function getMousePos(canvas, event) 
 {
     var rect = canvas.current.getBoundingClientRect();
@@ -36,16 +37,19 @@ export default function WarpCanvas({warpFunction, size, active})
     let lastX, lastY;
     let minTimeDiff = 30; //minimum time difference to apply warp
 
+    // Update the number of nodes based on the input value
     const setNodes = function(event) 
     {
         setNumNodes(parseInt(event.currentTarget.value) + 1);
     }
 
+    // Update the warp radius based on the input value
     const setRadius = function(event)
     {
         setWarpRadius(parseInt(event.currentTarget.value));
     }
 
+    // Create a new grid
     const newGrid = function()
     {
         const n = numNodes-1;
@@ -55,6 +59,7 @@ export default function WarpCanvas({warpFunction, size, active})
         createNodes();
     }
 
+    // Create nodes based on the grid points
     const createNodes = function()
     {
         nodes.current.length = 0;
@@ -75,6 +80,7 @@ export default function WarpCanvas({warpFunction, size, active})
         if(canvas.current) drawGrid();
     }
 
+    // Reset the grid positions
     const resetGrid = function(w, h, gridSize)
     {
         let i = 0;
@@ -90,6 +96,7 @@ export default function WarpCanvas({warpFunction, size, active})
         updateNodes();
     }
 
+    // Update the node positions
     const updateNodes = function()
     {
         let i = 0;
@@ -100,10 +107,13 @@ export default function WarpCanvas({warpFunction, size, active})
         }
     }    
     
+    // Draw the grid lines
     const drawGrid = function()
     {
         var ctx = canvas.current.getContext('2d');
         ctx.clearRect(0, 0, canvas.current.width, canvas.current.height);
+        
+        // Vertical
         for(let i = 0; i < numNodes; i++)
         {
             ctx.beginPath();
@@ -117,6 +127,7 @@ export default function WarpCanvas({warpFunction, size, active})
             ctx.stroke();           
         }
         
+        // Horizontal
         for(let j = 0; j < nodes.current.length; j+=numNodes)
         {
             ctx.beginPath();
@@ -128,6 +139,7 @@ export default function WarpCanvas({warpFunction, size, active})
         }
     }
 
+    // Draw the warp radius circle
     const drawWarpRadius = function(pos)
     {
         var ctx = canvas.current.getContext('2d');
@@ -141,6 +153,7 @@ export default function WarpCanvas({warpFunction, size, active})
         }      
     }
     
+    // Create the warp nodes based on the current position
     const createWarpNodes = function() 
     {
         for(let node of nodes.current)
@@ -159,6 +172,7 @@ export default function WarpCanvas({warpFunction, size, active})
         }
     }
 
+    // Calculate the distance between a node and a point
     const distanceNodePoint = function(node, pointX, pointY)
     {
         const dx = pointX - node.x;
@@ -166,6 +180,7 @@ export default function WarpCanvas({warpFunction, size, active})
         return Math.hypot(dx, dy);
     }
 
+    // Displace the warp nodes based on the displacement values
     const displaceNodes = function(dx, dy)
     {
         for(let node of warpNodes.current)
@@ -183,6 +198,7 @@ export default function WarpCanvas({warpFunction, size, active})
         }
     }
 
+    // Handle the mouse down event
     const mouseDown = function(event) 
     {
         let pos = getMousePos(canvas, event);
@@ -193,7 +209,8 @@ export default function WarpCanvas({warpFunction, size, active})
         
         createWarpNodes();
     }
-  
+
+    // Handle the mouse move event
     const mouseMove = function(event) 
     {
         let currentTime = Date.now();
@@ -223,6 +240,7 @@ export default function WarpCanvas({warpFunction, size, active})
         lastY = pos.y;
     }
 
+    // Handle the mouse up event
     const mouseUp = function(event)
     {
         if(isDragging)
@@ -235,6 +253,7 @@ export default function WarpCanvas({warpFunction, size, active})
         }              
     }
 
+    // Reset the grid and draw the lines when the canvas is modified
     useEffect(() => {
         if(canvas)
         {
@@ -245,6 +264,7 @@ export default function WarpCanvas({warpFunction, size, active})
         }    
     }, [canvas, size])
 
+    // Create a new grid when the number of nodes changes
     useEffect(() => {
         if(canvas)
         {
@@ -252,6 +272,7 @@ export default function WarpCanvas({warpFunction, size, active})
         }    
     }, [numNodes])
 
+    // Hides or shows the warp canvas
     useEffect(() => {
         if(active)
         {
@@ -265,6 +286,7 @@ export default function WarpCanvas({warpFunction, size, active})
         }
     }, [active])
 
+    // creates a new grid if it doesn't exist
     if(gridPoints.current.length <= 0)
     {
         newGrid();

@@ -2,21 +2,19 @@ import React, { useState, useEffect, useRef } from 'react';
 import {processPoint} from './Grid.js'
 import CropCanvas from './CropCanvas';
 import WarpCanvas from './WarpCanvas';
+import defaultImage from './images/blue.jpg'
 
 export default function SourceContainer ({setImage, size}) 
 {
   const [srcImage, setSrcImage] = useState(null);
-  const [resizedImage, setResizedImage] = useState(null);
-  const srcCanvas = useRef(null);
+  const [editedImage, setEditedImage] = useState(null);
+  const editingCanvas = useRef(null);
 
   const [bufferImage, setBufferImage] = useState(null);
   const [toggleCrop, setToggleCrop] = useState(false);
   const [toggleWarp, setToggleWarp] = useState(false);
-
-  const [cropOffsetX, setCropOffestX] = useState(0);
-  const [cropOffsetY, setCropOffestY] = useState(0);
-  const [cropWidth, setCropWidth] = useState(size);
-  const [cropHeight, setCropHeight] = useState(size);
+  const [cropCoords, setCropCoords] = useState([0, 0, size, size]);
+  const [resetFlag, setResetFlag] = useState(false);
 
   //Hide/Show Crop interface
   const hideCrop = function()
@@ -31,45 +29,41 @@ export default function SourceContainer ({setImage, size})
     setToggleCrop(false);
   }    
 
+  //Draws the buffered image on the editing canvas
   const drawScene = function()
   {
-    const ctx = srcCanvas.current.getContext('2d')
-    ctx.clearRect(0, 0, srcCanvas.current.width, srcCanvas.current.height);
+    const ctx = editingCanvas.current.getContext('2d')
+    ctx.clearRect(0, 0, editingCanvas.current.width, editingCanvas.current.height);
     ctx.drawImage(bufferImage, 0, 0, size, size);
   }
 
+  //Updates crop coordinates with given parameters
   const crop = function(offsetX, offsetY, width, height)
   {
-    setCropOffestX(offsetX);
-    setCropOffestY(offsetY);
-    setCropWidth(width);
-    setCropHeight(height);
-    
-    //Create a new image from source
-    let img = new Image();
-    img.src = srcCanvas.current.toDataURL();
-    createCroppedImage(img);
+    setCropCoords([offsetX, offsetY, width, height]);
   }
 
+  //Distorts the image given the new gridPoints
   const warp = function(gridPoints, gridSize, save)
   {
-    const ctx = srcCanvas.current.getContext('2d');
+    const ctx = editingCanvas.current.getContext('2d');
         
     //Clear canvas image
-    ctx.clearRect(0, 0, srcCanvas.current.width, srcCanvas.current.height);
+    ctx.clearRect(0, 0, editingCanvas.current.width, editingCanvas.current.height);
     var distortShapeData = [];
-    //Distort image
+    //Distorts the image and paints it into the editing canvas
     for(let i = 0; i < gridPoints.length; i++){
-      processPoint(ctx, resizedImage, gridPoints, gridPoints[i], gridSize, distortShapeData);
+      processPoint(ctx, editedImage, gridPoints, gridPoints[i], gridSize, distortShapeData);
     }
     
     if(save)
     {
-      const imgScan = ctx.getImageData(0, 0, size, size);
+      //Updates de final image with the current edited image
+      //const imgScan = ctx.getImageData(0, 0, size, size);
     
-      ctx.putImageData(imgScan, 0, 0);
+      //ctx.putImageData(imgScan, 0, 0);
       let newImage = new Image();
-      newImage.src = srcCanvas.current.toDataURL();
+      newImage.src = editingCanvas.current.toDataURL();
       newImage.onload = () => 
       {
         setBufferImage(newImage);
@@ -78,7 +72,8 @@ export default function SourceContainer ({setImage, size})
     }
   }
 
-  const resetSourceImage = function()
+  //Resets the edited image with the source image
+  const resetImage = function()
   {
     if(srcImage != null) 
     {
@@ -86,11 +81,13 @@ export default function SourceContainer ({setImage, size})
     }
   }
 
+  //Resets the crop to full size
   const resetCrop = function()
   {
-
+    setResetFlag(true);
   }
 
+  //Updates the source image with the uploaded image
   const imageHandler = (e) => 
   {
     let reader = new FileReader();
@@ -111,6 +108,7 @@ export default function SourceContainer ({setImage, size})
     reader.readAsDataURL(e.target.files[0]);
   }
 
+  //Creates a new image for editing
   const createBufferImage = function(img)
   {
     const bufferCanvas = document.createElement('canvas');
@@ -118,7 +116,7 @@ export default function SourceContainer ({setImage, size})
     bufferCanvas.width = size;
     bufferCanvas.height = size;
 
-    //Draw source on canvas and generate a new image               
+    //Draws edited image on canvas and generate a new image               
     bufferCtx.drawImage(img, 
       0, 0, size, size);
 
@@ -127,21 +125,22 @@ export default function SourceContainer ({setImage, size})
     newImage.onload = () => 
     {
       setBufferImage(newImage);
-      setResizedImage(newImage);
+      setEditedImage(newImage);
       createCroppedImage(newImage);
     }
   }
 
+  // Creates a new context, crops the image, and sets the new edited image
   const createCroppedImage = function(img)
   {
     const cropCanvas = document.createElement('canvas');
     const cropCtx = cropCanvas.getContext('2d');
-    cropCanvas.width = cropWidth;
-    cropCanvas.height = cropHeight;   
+    cropCanvas.width = cropCoords[2];
+    cropCanvas.height = cropCoords[3];
 
     cropCtx.drawImage(img, 
-      cropOffsetX, cropOffsetY, cropWidth, cropHeight,
-      0, 0, cropCanvas.width, cropCanvas.height);
+      cropCoords[0], cropCoords[1], cropCoords[2], cropCoords[3],
+      0, 0, cropCoords[2], cropCoords[3]);
 
     let newImage = new Image();
     newImage.src = cropCanvas.toDataURL();
@@ -150,28 +149,45 @@ export default function SourceContainer ({setImage, size})
     }
   }
 
+  // If there is no source image, use default image
+  useEffect(() =>
+  {
+    if(srcImage == null)
+    {
+      let newImage = new Image();
+      newImage.src = defaultImage;
+      newImage.onload = () => 
+      {
+        setSrcImage(newImage);
+        createCroppedImage(newImage);
+      }
+    }
+  },[srcImage])
+
+  // If source image is changed, generate a buffer image
   useEffect(() => 
   {
     if(srcImage)
     {
       createBufferImage(srcImage);
     }
-  }, [srcImage, size])
+  }, [srcImage, size, cropCoords])
 
+  // If buffer image is changed, redraw the editing canvas
   useEffect(() => 
   {
-    if(bufferImage && srcCanvas)
+    if(bufferImage && editingCanvas)
     {
       drawScene();
-    }    
-  }, [bufferImage, srcCanvas, size])
+    }
+  }, [bufferImage, editingCanvas, size])
 
   return (
     <div>
       <h2>Source Image</h2>
       <button onClick={hideWarp}>Warp Image</button>
       <button onClick={hideCrop}>Crop Image</button>    
-      <button onClick={resetSourceImage}>Reset Image</button>
+      <button onClick={resetImage}>Reset Image</button>
       <button onClick={resetCrop}>Reset Crop</button>
       <br />
       <br />
@@ -184,7 +200,7 @@ export default function SourceContainer ({setImage, size})
       />        
       <div class = "canvas-container">
         <canvas          
-          ref={srcCanvas}
+          ref={editingCanvas}
           width={size}
           height={size}
         />
@@ -192,7 +208,9 @@ export default function SourceContainer ({setImage, size})
         <CropCanvas
           cropFunction = {crop}
           size = {size}
-          active = {toggleCrop}
+          //active = {toggleCrop}
+          resetFlag = {resetFlag}
+          setResetFlag = {setResetFlag}
         />
 
         <WarpCanvas

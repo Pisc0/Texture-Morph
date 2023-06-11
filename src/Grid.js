@@ -6,7 +6,7 @@ export function getGridPoints(width, height, gridSize)
     var column = 0;
     var row = 0;
 
-    //Creates grid points assigning column and row index
+    //Creates grid points assigning index, row, column and coordinates
     for(let i = 0; i <= height; i += gridSize)
     {
         column = 0;
@@ -37,15 +37,17 @@ export function getGridPoints(width, height, gridSize)
 
 export function processPoint(ctx, image, points, p1, gridSize, distortShapeData)
 {
+    // Get the neighboring points for the current point.
     var p2 = getItemByValues(points, 'row', p1.row, 'column', p1.column + 1);
     var p3 = getItemByValues(points, 'row', p1.row + 1, 'column', p1.column);
     var p4 = getItemByValues(points, 'row', p1.row + 1, 'column', p1.column +1);
 
+    // Set an offset value for drawing the triangles.
     var offset = 1;
 
     if(p1 && p2 && p3 && p4)
     {
-        //First triangle
+        // Calculate the transformation matrices for the first triangle.
         var xm = getLinearSolution(
             0, 0, p1.x_end, 
             gridSize, 0, p2.x_end, 
@@ -55,42 +57,51 @@ export function processPoint(ctx, image, points, p1, gridSize, distortShapeData)
             gridSize, 0, p2.y_end, 
             0, gridSize, p3.y_end);
         
-        //The part of the image that is transformed is later clipped and added to the source image
+        // Save the current context state and apply the transformation matrix.
         ctx.save();
         ctx.setTransform(xm[0], ym[0], xm[1], ym[1], xm[2], ym[2]);
-        ctx.beginPath();
         
+        // Begin drawing the first triangle by defining its path.
+        ctx.beginPath();
         ctx.moveTo(-offset, -offset);
         ctx.lineTo(gridSize + offset, -offset);
         ctx.lineTo(-offset, gridSize + offset);
         ctx.lineTo(-offset, -offset);
-
         ctx.closePath();
+
+        // Clip the current context to the defined path.
         ctx.clip();
+         // Draw the image onto the clipped area and restore the previous context state.
         ctx.drawImage(image, p1.x, p1.y, gridSize, gridSize, -offset, -offset, gridSize + offset, gridSize + offset);
         ctx.restore();       
 
         //Second triangle
-        var xn = getLinearSolution(gridSize, gridSize, p4.x_end, gridSize, 0, p2.x_end, 0, gridSize, p3.x_end);
-        var yn = getLinearSolution(gridSize, gridSize, p4.y_end, gridSize, 0, p2.y_end, 0, gridSize, p3.y_end);
+        var xn = getLinearSolution(
+            gridSize, gridSize, p4.x_end, 
+            gridSize, 0, p2.x_end, 
+            0, gridSize, p3.x_end);
+        var yn = getLinearSolution(
+            gridSize, gridSize, p4.y_end, 
+            gridSize, 0, p2.y_end, 
+            0, gridSize, p3.y_end);
 
         ctx.save();
         ctx.setTransform(xn[0], yn[0], xn[1], yn[1], xn[2], yn[2]);
+        
         ctx.beginPath();
-
         ctx.moveTo(gridSize, gridSize);
         ctx.lineTo(gridSize, 0);
         ctx.lineTo(gridSize -offset, 0);
         ctx.lineTo(-offset, gridSize);
         ctx.lineTo(0, gridSize);
         ctx.lineTo(gridSize, gridSize);
-
         ctx.closePath();
+
         ctx.clip();
         ctx.drawImage(image, p1.x, p1.y, gridSize, gridSize, -offset, -offset, gridSize + offset, gridSize + offset);
         ctx.restore();
 
-        //Distort Data
+        //Save distort Data
         distortShapeData.push({
             points: [
                 {x: p1.x, y: p1.y},
@@ -120,8 +131,10 @@ export function processPoint(ctx, image, points, p1, gridSize, distortShapeData)
     }
 }
 
+// Calculate the linear solution of a system of equations with three variables.
 function getLinearSolution(r1, s1, t1, r2, s2, t2, r3, s3, t3)
 {
+    // Parsing the input values to ensure they are treated as numbers.
     r1 = parseFloat(r1);
     s1 = parseFloat(s1);
     t1 = parseFloat(t1);
@@ -131,7 +144,7 @@ function getLinearSolution(r1, s1, t1, r2, s2, t2, r3, s3, t3)
     r3 = parseFloat(r3);
     s3 = parseFloat(s3);
     t3 = parseFloat(t3);
-
+    // Calculating the values of 'a', 'b', and 'c' in the linear equation.
     var a = (((t2 - t3) * (s1 - s2)) - ((t1 - t2) * (s2 - s3))) 
         / (((r2 - r3) * (s1 - s2)) - ((r1 - r2) * (s2 - s3)));
     var b = (((t2 - t3) * (r1 - r2)) - ((t1 - t2) * (r2 - r3)))
@@ -141,11 +154,13 @@ function getLinearSolution(r1, s1, t1, r2, s2, t2, r3, s3, t3)
     return [a, b, c];
 }
 
+// This function retrieves an item from an array of items based on specified key-value pairs.
 export function getItemByValues(items, key, value, key2, value2)
 {
     var result;
     const len = items.length;
 
+    // Iterating through the items array to find a match.
     for(let i = 0; i < len; i++)
     {
         if(items[i][key] === value && items[i][key2] === value2){

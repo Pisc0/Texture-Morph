@@ -8,11 +8,13 @@ export default function TiledContainer ({image, size})
     const [numTiles, setNumTiles] = useState(3);
     const filename = "warpedImage.png";
 
+    // Update the number of tiles
     const setTiles = function(event) 
     {
       setNumTiles(event.currentTarget.value);
     }
 
+    //Dowloads the edited image
     const downloadImage = function()
     {
       if(image)
@@ -29,17 +31,20 @@ export default function TiledContainer ({image, size})
       }
     }
 
+    // Draw the tiled image when dependencies change
     useEffect(() => {
       if(image  && canvas)
       {
         const ctx = canvas.current.getContext('2d')
         ctx.clearRect(0, 0, canvas.current.width, canvas.current.height);
   
+        // Calculate the dimensions for cropping the image into tiles
         let cropWidth = image.width / numTiles;
         let cropHeight = image.height / numTiles;
         let widthTiles = (size/cropWidth);
         let heightTiles = (size/cropHeight);
 
+        // Draw the cropped tiles on the canvas
         for(let i=0; i<heightTiles; i++)
         {
           for(let j=0; j<widthTiles; j++)

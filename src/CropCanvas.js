@@ -1,6 +1,7 @@
 import './App.css';
 import React, { useEffect, useRef } from 'react';
 
+// Returns the mouse position relative to the canvas given as parameter
 function getMousePos(canvas, event) {
     var rect = canvas.current.getBoundingClientRect();
     return {
@@ -9,7 +10,7 @@ function getMousePos(canvas, event) {
     };
 }
 
-export default function CropCanvas ({cropFunction, size, active}) {    
+export default function CropCanvas ({cropFunction, size, resetFlag, setResetFlag}) {    
     const canvas = useRef(null);
     const boundaries = useRef(new Array());
     const shapes = useRef(new Array());
@@ -21,6 +22,7 @@ export default function CropCanvas ({cropFunction, size, active}) {
     let startX, startY;
     let centerX, centerY;
 
+    //Resets the crop boundaries
     const resetBoundaries = function(){
         boundaries.current[0] = 0;  //left
         boundaries.current[1] = size-shapeSize; //right
@@ -30,6 +32,7 @@ export default function CropCanvas ({cropFunction, size, active}) {
         centerY = (boundaries.current[2] + boundaries.current[3])/2;
     }
 
+    //Updates the crop boundaries to the shape positions
     const updatePositions = function()
     {
       shapes.current[0].x = boundaries.current[0];
@@ -48,6 +51,7 @@ export default function CropCanvas ({cropFunction, size, active}) {
       shapes.current[4].y = (boundaries.current[2] + boundaries.current[3])/2;
     }
 
+    //Detects if the mouse is inside a shape
     const isMouseInside = function(x, y, shape)
     {
         if(x > shape.x && x < (shape.x+shape.width)
@@ -57,7 +61,8 @@ export default function CropCanvas ({cropFunction, size, active}) {
         }
         return false; 
     }
-  
+
+    //If a shape has been clicked start dragging
     const mouseDown = function(event) 
     {
         let pos = getMousePos(canvas, event);
@@ -75,7 +80,8 @@ export default function CropCanvas ({cropFunction, size, active}) {
             index++;
         }
     }
-  
+    
+    // Updates the UI and the crop boundaries while the shapes are being dragged
     const mouseMove = function(event) 
     {
         if(isDragging)
@@ -125,6 +131,7 @@ export default function CropCanvas ({cropFunction, size, active}) {
         }
     }
 
+    // Apply the crop when the mouse click is released
     const mouseUp = function()
     {
         if(isDragging)
@@ -136,6 +143,7 @@ export default function CropCanvas ({cropFunction, size, active}) {
         }              
     }
 
+    // Draws the cropping UI
     let drawShapes = function() 
     {
         const ctx = canvas.current.getContext('2d')
@@ -158,6 +166,7 @@ export default function CropCanvas ({cropFunction, size, active}) {
         ctx.closePath();       
     }
 
+    // Resets the crop
     const resetCrop = function()
     {
         resetBoundaries();
@@ -167,8 +176,11 @@ export default function CropCanvas ({cropFunction, size, active}) {
         var w = boundaries.current[1] - boundaries.current[0] + shapeSize;
         var h = boundaries.current[3] - boundaries.current[2] + shapeSize;
         cropFunction(boundaries.current[0], boundaries.current[2], w, h);
+
+        setResetFlag(false);
     }
 
+    // If the canvas or the size of the canvas is modified, reset the crop
     useEffect(() => {
         if(canvas)
         {
@@ -176,7 +188,17 @@ export default function CropCanvas ({cropFunction, size, active}) {
         }    
     }, [canvas, size])
 
-    /*useEffect(() => {
+    // If SourceContainer sets resetFlag to true, reset the crop
+    useEffect(() => {
+        if(resetFlag)
+        {
+            resetCrop();           
+        }    
+    }, [resetFlag])
+
+    /*
+    // Hide crop canvas
+    useEffect(() => {
         if(active)
         {
             canvas.current.removeAttribute("hidden");
@@ -185,8 +207,10 @@ export default function CropCanvas ({cropFunction, size, active}) {
         {
             canvas.current.setAttribute("hidden", "hidden");
         }
-    }, [active])*/
+    }, [active])
+    */
 
+    // Generates the cropping shapes at start
     if(shapes.current.length <= 0)
     {
         resetBoundaries();
@@ -209,7 +233,6 @@ export default function CropCanvas ({cropFunction, size, active}) {
             onMouseOut = {mouseUp}
             onMouseMove={mouseMove}
             />
-            <button onClick={resetCrop}>Reset Crop</button> 
             <br />
             <br />         
         </div>      
