@@ -78,12 +78,6 @@ export default function TiledContainer ({image, size})
             id = "myRange"
             onChange = {setTiles}           
           />
-          <p>
-            Tiles: 
-            <span>{numTiles}</span> 
-            x
-            <span>{numTiles}</span>
-          </p>
         </div>
         <button
           onClick = {downloadImage}

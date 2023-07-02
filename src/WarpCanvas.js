@@ -12,7 +12,7 @@ function getMousePos(canvas, event)
     };
 }
 
-export default function WarpCanvas({warpFunction, size, active})
+export default function WarpCanvas({distortFunction, size, active})
 {
     const canvas = useRef(null);
     const slideContainer = useRef(null);
@@ -22,11 +22,11 @@ export default function WarpCanvas({warpFunction, size, active})
     const nodes = useRef([]);
     const [numNodes, setNumNodes] = useState(15);
 
-    const warpNodes = useRef([]);
+    const distortNodes = useRef([]);
     const radiusSlider = useRef(null);
-    const [warpRadius, setWarpRadius] = useState(50);
+    const [distortRadius, setDistortRadius] = useState(50);
 
-    const lastTime = useRef(0); //last time warp was applied
+    const lastTime = useRef(0); //last time distort was applied
     const nodeRadius = 5;
     const nodeColor = 'cyan';
 
@@ -35,7 +35,7 @@ export default function WarpCanvas({warpFunction, size, active})
     let isDragging = false;
     let startX, startY;
     let lastX, lastY;
-    let minTimeDiff = 30; //minimum time difference to apply warp
+    let minTimeDiff = 30; //minimum time difference to apply distort
 
     // Update the number of nodes based on the input value
     const setNodes = function(event) 
@@ -43,10 +43,10 @@ export default function WarpCanvas({warpFunction, size, active})
         setNumNodes(parseInt(event.currentTarget.value) + 1);
     }
 
-    // Update the warp radius based on the input value
+    // Update the distort radius based on the input value
     const setRadius = function(event)
     {
-        setWarpRadius(parseInt(event.currentTarget.value));
+        setDistortRadius(parseInt(event.currentTarget.value));
     }
 
     // Create a new grid
@@ -139,22 +139,22 @@ export default function WarpCanvas({warpFunction, size, active})
         }
     }
 
-    // Draw the warp radius circle
-    const drawWarpRadius = function(pos)
+    // Draw the distort radius circle
+    const drawDistortRadius = function(pos)
     {
         var ctx = canvas.current.getContext('2d');
         if(pos)
         {
             ctx.beginPath();
-            ctx.arc(pos.x, pos.y, warpRadius, 0, 2 * Math.PI, false);
+            ctx.arc(pos.x, pos.y, distortRadius, 0, 2 * Math.PI, false);
             ctx.lineWidth = 1;
             ctx.strokeStyle = strokeColor;
             ctx.stroke();
         }      
     }
     
-    // Create the warp nodes based on the current position
-    const createWarpNodes = function() 
+    // Create the distort nodes based on the current position
+    const createDistortNodes = function() 
     {
         for(let node of nodes.current)
         {
@@ -162,10 +162,10 @@ export default function WarpCanvas({warpFunction, size, active})
                 && node.column !== (numNodes-1) && node.row !== (numNodes-1))
             {
                 let dist = distanceNodePoint(node, startX, startY);
-                if(dist < warpRadius)
+                if(dist < distortRadius)
                 {
                     node.distance = dist;
-                    warpNodes.current.push(node);
+                    distortNodes.current.push(node);
                     isDragging = true;
                 }
             }                  
@@ -180,13 +180,13 @@ export default function WarpCanvas({warpFunction, size, active})
         return Math.hypot(dx, dy);
     }
 
-    // Displace the warp nodes based on the displacement values
+    // Displace the nodes based on the displacement values
     const displaceNodes = function(dx, dy)
     {
-        for(let node of warpNodes.current)
+        for(let node of distortNodes.current)
         {
             //Distance factor
-            const k = (warpRadius - node.distance) / warpRadius;
+            const k = (distortRadius - node.distance) / distortRadius;
             //Calculate new node position
             node.x = Math.max(0, Math.min(node.x + (dx * k), size));
             node.y = Math.max(0, Math.min(node.y + (dy * k), size));
@@ -207,7 +207,7 @@ export default function WarpCanvas({warpFunction, size, active})
         lastX = startX;
         lastY = startY;
         
-        createWarpNodes();
+        createDistortNodes();
     }
 
     // Handle the mouse move event
@@ -227,14 +227,14 @@ export default function WarpCanvas({warpFunction, size, active})
             {
                 const n = numNodes-1;
                 const gridSize = size/n;
-                warpFunction(gridPoints.current, gridSize, false);
+                distortFunction(gridPoints.current, gridSize, false);
                         
                 lastTime.current = currentTime;
             }
         }
-        //Draw grid and warp radius
+        //Draw grid and distort radius
         drawGrid();
-        drawWarpRadius(pos);
+        drawDistortRadius(pos);
 
         lastX = pos.x;
         lastY = pos.y;
@@ -246,10 +246,10 @@ export default function WarpCanvas({warpFunction, size, active})
         if(isDragging)
         {
             isDragging = false;
-            warpNodes.current.length = 0;
+            distortNodes.current.length = 0;
             const n = numNodes-1;
             const gridSize = size/n;
-            warpFunction(gridPoints.current, gridSize, true);                                   
+            distortFunction(gridPoints.current, gridSize, true);                                   
         }              
     }
 
@@ -272,7 +272,7 @@ export default function WarpCanvas({warpFunction, size, active})
         }    
     }, [numNodes])
 
-    // Hides or shows the warp canvas
+    // Hides or shows the distort canvas
     useEffect(() => {
         if(active)
         {
@@ -308,10 +308,10 @@ export default function WarpCanvas({warpFunction, size, active})
                 <button onClick={newGrid}>Reset Grid</button>
                 <br />
                 <p>
-                    Warp Radius: 
-                    <span> {warpRadius}</span> 
+                    Distort Radius: 
+                    <span> {distortRadius}</span> 
                     x
-                    <span>{warpRadius}</span>
+                    <span>{distortRadius}</span>
                 </p>               
                 <input 
                     ref = {radiusSlider}
@@ -319,7 +319,7 @@ export default function WarpCanvas({warpFunction, size, active})
                     type="range" 
                     min = "10" 
                     max = "200"
-                    value = {warpRadius}
+                    value = {distortRadius}
                     step = "1"           
                     id = "radiusRange"
                     onChange = {setRadius}           

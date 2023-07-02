@@ -71,7 +71,7 @@
 }
 
 .slider::before {
-  content: '1';
+  content: '-';
   color:black;
   position: relative;
   left: 90%;
@@ -79,7 +79,7 @@
 }
 
 .slider::after {
-  content: '8';
+  content: '+';
   color:black;
   position: relative;
   right: 90%;

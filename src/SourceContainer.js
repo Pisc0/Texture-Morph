@@ -44,7 +44,7 @@ export default function SourceContainer ({setImage, size})
   }
 
   //Distorts the image given the new gridPoints
-  const warp = function(gridPoints, gridSize, save)
+  const distort = function(gridPoints, gridSize, save)
   {
     const ctx = editingCanvas.current.getContext('2d');
         
@@ -52,16 +52,14 @@ export default function SourceContainer ({setImage, size})
     ctx.clearRect(0, 0, editingCanvas.current.width, editingCanvas.current.height);
     var distortShapeData = [];
     //Distorts the image and paints it into the editing canvas
-    for(let i = 0; i < gridPoints.length; i++){
+    for(let i = 0; i < gridPoints.length; i++)
+    {
       processPoint(ctx, editedImage, gridPoints, gridPoints[i], gridSize, distortShapeData);
     }
     
     if(save)
     {
       //Updates de final image with the current edited image
-      //const imgScan = ctx.getImageData(0, 0, size, size);
-    
-      //ctx.putImageData(imgScan, 0, 0);
       let newImage = new Image();
       newImage.src = editingCanvas.current.toDataURL();
       newImage.onload = () => 
@@ -214,7 +212,7 @@ export default function SourceContainer ({setImage, size})
         />
 
         <WarpCanvas
-          warpFunction= {warp}
+          distortFunction = {distort}
           size = {size}
           active = {toggleWarp}
         />
