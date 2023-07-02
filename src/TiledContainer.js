@@ -67,6 +67,7 @@ export default function TiledContainer ({image, size})
           />
         </div>
         <div class = "slideContainer">
+          <p>Number of Tiles</p>
           <input 
             ref = {tileSlider}
             class = "slider"
@@ -77,8 +78,10 @@ export default function TiledContainer ({image, size})
             step = "1"           
             id = "myRange"
             onChange = {setTiles}           
-          />
+          />         
         </div>
+        <br />
+        <br />
         <button
           onClick = {downloadImage}
         >
