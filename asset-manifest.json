@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/Texture-Morph/static/css/main.1fadbc52.css",
-    "main.js": "/Texture-Morph/static/js/main.9d93536c.js",
-    "static/media/blue.jpg": "/Texture-Morph/static/media/blue.62c7f8381eb13ee95fc6.jpg",
+    "main.js": "/Texture-Morph/static/js/main.528042b6.js",
+    "static/media/Test.jpg": "/Texture-Morph/static/media/Test.2018936c7e552df74767.jpg",
     "index.html": "/Texture-Morph/index.html",
     "main.1fadbc52.css.map": "/Texture-Morph/static/css/main.1fadbc52.css.map",
-    "main.9d93536c.js.map": "/Texture-Morph/static/js/main.9d93536c.js.map"
+    "main.528042b6.js.map": "/Texture-Morph/static/js/main.528042b6.js.map"
   },
   "entrypoints": [
     "static/css/main.1fadbc52.css",
-    "static/js/main.9d93536c.js"
+    "static/js/main.528042b6.js"
   ]
 }
