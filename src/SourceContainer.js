@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {processPoint} from './Grid.js'
 import CropCanvas from './CropCanvas';
 import WarpCanvas from './WarpCanvas';
-import defaultImage from './images/blue.jpg'
+import defaultImage from './images/Test.jpg'
 
 export default function SourceContainer ({setImage, size}) 
 {
@@ -22,7 +22,7 @@ export default function SourceContainer ({setImage, size})
     setToggleCrop(!toggleCrop);
     setToggleWarp(false);
   }
-  //Hide/Show warp interface
+  //Hide/Show Distort interface
   const hideWarp = function()
   {
     setToggleWarp(!toggleWarp);
@@ -183,7 +183,7 @@ export default function SourceContainer ({setImage, size})
   return (
     <div>
       <h2>Source Image</h2>
-      <button onClick={hideWarp}>Warp Image</button>
+      <button onClick={hideWarp}>Distort Image</button>
       <button onClick={hideCrop}>Crop Image</button>    
       <button onClick={resetImage}>Reset Image</button>
       <button onClick={resetCrop}>Reset Crop</button>
@@ -195,7 +195,9 @@ export default function SourceContainer ({setImage, size})
         id="input" 
         accept="image/*" 
         onChange ={imageHandler}
-      />        
+      />
+      <br />
+      <br />        
       <div class = "canvas-container">
         <canvas          
           ref={editingCanvas}

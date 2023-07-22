@@ -25,6 +25,7 @@ export default function WarpCanvas({distortFunction, size, active})
     const distortNodes = useRef([]);
     const radiusSlider = useRef(null);
     const [distortRadius, setDistortRadius] = useState(50);
+    const distortColor = "rgba(255, 255, 255, 0.5)";
 
     const lastTime = useRef(0); //last time distort was applied
     const nodeRadius = 5;
@@ -148,7 +149,7 @@ export default function WarpCanvas({distortFunction, size, active})
             ctx.beginPath();
             ctx.arc(pos.x, pos.y, distortRadius, 0, 2 * Math.PI, false);
             ctx.lineWidth = 1;
-            ctx.strokeStyle = strokeColor;
+            ctx.strokeStyle = distortColor;
             ctx.stroke();
         }      
     }
@@ -326,7 +327,7 @@ export default function WarpCanvas({distortFunction, size, active})
                 />
                 <br />
                 <p>
-                    Tiles: 
+                    Grid Size: 
                     <span> {numNodes-1}</span> 
                     x
                     <span>{numNodes-1}</span>
